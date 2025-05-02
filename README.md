@@ -27,7 +27,9 @@ This project uses traditional image processing techniques and a trained machine 
 ## 🚀 Getting Started
 
 1. **Clone the Repository**
-```bash git clone https://github.com/krishna663-wq/Image_Processing_based_fire_detection.git  cd Image_Processing_based_fire_detection
+```bash
+git clone https://github.com/krishna663-wq/Image_Processing_based_fire_detection.git
+cd Image_Processing_based_fire_detection
 
 # Create and Activate Virtual Environment
 

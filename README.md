@@ -29,15 +29,16 @@ This project uses traditional image processing techniques and a trained machine 
 1. **Clone the Repository**
 ```bash git clone https://github.com/krishna663-wq/Image_Processing_based_fire_detection.git  cd Image_Processing_based_fire_detection
 
-## Create and Activate Virtual Environment
-- ** python -m venv venv
-- ** source venv/bin/activate     # For Windows: venv\Scripts\activate
+# Create and Activate Virtual Environment
 
-## Install Dependencies
-- ** pip install opencv-python numpy tensorflow
+python -m venv venv
+source venv/bin/activate     # For Windows: venv\Scripts\activate
 
-## Run the Project
-- ** python app.py
+#Install Dependencies
+pip install opencv-python numpy tensorflow
+
+##Run the Project
+python app.py
 
 
 

@@ -1,13 +1,13 @@
 # 🔥 Image Processing Based Fire Detection
 
-This project uses traditional image processing techniques and a trained machine learning model to detect fire in images or video. The system is built using Python, OpenCV, TensorFlow, and NumPy, and is executable through a simple command-line interface.
+This project uses traditional image processing techniques and a trained machine learning model to detect fire in images or video. The system is built using Python, OpenCV, TensorFlow, and NumPy, and it leverages a pretrained model that utilizes the AdaBoost algorithm for fire classification.
 
 ---
 
 ## 📌 Features
 
 - Fire detection using color and shape-based image processing
-- Trained ML model for classification
+- Trained ML model for classification (using AdaBoost algorithm)
 - Real-time or static image-based detection
 - Accuracy reporting and confusion matrix evaluation
 - Lightweight and easy to deploy
@@ -21,6 +21,7 @@ This project uses traditional image processing techniques and a trained machine 
 - **NumPy**
 - **TensorFlow**
 - **Virtual Environment (venv)**
+- **AdaBoost Algorithm (used pretrained ML model)**
 
 ---
 
@@ -36,11 +37,9 @@ cd Image_Processing_based_fire_detection
 python -m venv venv
 source venv/bin/activate     # For Windows: venv\Scripts\activate
 
-#Install Dependencies
+# Install Dependencies
 pip install opencv-python numpy tensorflow
 
-##Run the Project
+# Run the Project
 python app.py
-
-
-
+```

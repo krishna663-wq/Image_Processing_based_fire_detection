@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FireGuard - Fire Detection UI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #E53935;
+    --red-light: #FFEBEE;
+    --red-glow: rgba(229,57,53,0.18);
+    --green: #2E7D32;
+    --green-light: #E8F5E9;
+    --green-glow: rgba(46,125,50,0.15);
+    --dark: #1E1E1E;
+    --grey: #6B7280;
+    --bg: #F7F7F7;
+    --white: #FFFFFF;
+    --border: #E5E7EB;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.10);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.14);
+    --r-sm: 12px;
+    --r-md: 16px;
+    --r-lg: 24px;
+    --r-xl: 32px;
+    --ease-out: cubic-bezier(.2,.8,.2,1);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #E8E8E8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 24px 60px;
+    gap: 0;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .brand-icon {
+    width: 40px; height: 40px;
+    background: var(--red);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .brand-name {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--dark);
+    letter-spacing: -0.5px;
+  }
+
+  .page-sub {
+    font-size: 15px;
+    color: var(--grey);
+    font-weight: 400;
+  }
+
+  .screens {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: min(380px, 100%);
+  }
+
+  .screen-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--grey);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+
+  .phone {
+    width: min(375px, 100%);
+    background: var(--bg);
+    border-radius: 44px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.10), inset 0 0 0 1px rgba(255,255,255,0.6);
+    position: relative;
+  }
+
+  .notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 120px; height: 34px;
+    background: #111;
+    border-radius: 0 0 20px 20px;
+    z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px;
+  }
+  .notch-cam { width: 10px; height: 10px; background: #222; border-radius: 50%; border: 2px solid #333; }
+  .notch-mic { width: 40px; height: 5px; background: #222; border-radius: 4px; }
+
+  .phone-inner {
+    padding: 48px 0 32px;
+    min-height: 812px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 24px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dark);
+  }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .status-icons span { font-size: 13px; }
+
+  .nav-header {
+    padding: 0 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .nav-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--dark);
+    letter-spacing: -0.3px;
+  }
+  .nav-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: white;
+  }
+  .nav-back {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; cursor: pointer;
+    border: 1px solid var(--border);
+  }
+
+  .screen-content {
+    padding: 0 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .status-card {
+    border-radius: var(--r-xl);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .22s var(--ease-out), box-shadow .22s var(--ease-out);
+  }
+  .status-card.safe {
+    background: linear-gradient(135deg, #2E7D32 0%, #388E3C 60%, #43A047 100%);
+  }
+  .status-card.danger {
+    background: linear-gradient(135deg, #C62828 0%, #E53935 60%, #EF5350 100%);
+  }
+
+  .status-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+  .status-card::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; right: 20px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .status-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    position: relative; z-index: 1;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: 0.3px;
+  }
+  .pulse-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: white;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .status-time {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 500;
+  }
+
+  .status-main {
+    position: relative; z-index: 1;
+  }
+
+  .status-icon-big {
+    font-size: 40px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .status-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+
+  .status-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    font-weight: 400;
+  }
+
+  .status-stats {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+    position: relative; z-index: 1;
+  }
+
+  .stat-pill {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 8px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-val { font-size: 16px; font-weight: 700; color: white; }
+  .stat-lbl { font-size: 10px; color: rgba(255,255,255,0.7); font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px; }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2px;
+  }
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--dark);
+  }
+  .section-link {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--red);
+    cursor: pointer;
+  }
+
+  .camera-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .cam-card {
+    border-radius: var(--r-md);
+    overflow: hidden;
+    position: relative;
+    background: #1a1a2e;
+    aspect-ratio: 4/3;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .cam-scene {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  .cam-bg { position: absolute; inset: 0; }
+  .cam-scene-1 .cam-bg { background: linear-gradient(180deg, #1a3a52 0%, #0d2137 50%, #1a2a1a 100%); }
+  .cam-scene-2 .cam-bg { background: linear-gradient(180deg, #2a1a0d 0%, #3d2008 50%, #1a0d00 100%); }
+  .cam-scene-3 .cam-bg { background: linear-gradient(180deg, #1a1a3a 0%, #0d0d24 50%, #1a1a1a 100%); }
+  .cam-scene-4 .cam-bg { background: linear-gradient(180deg, #0d2a1a 0%, #082014 50%, #0a1a10 100%); }
+
+  .cam-floor {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 35%;
+    background: rgba(0,0,0,0.3);
+  }
+
+  .fire-effect {
+    position: absolute;
+    bottom: 20%;
+    left: 30%;
+    width: 40%;
+    height: 50%;
+  }
+  .fire-base {
+    position: absolute;
+    bottom: 0;
+    left: 50%; transform: translateX(-50%);
+    width: 30px; height: 40px;
+    background: radial-gradient(ellipse at 50% 100%, #ff4500 0%, #ff6600 40%, transparent 80%);
+    border-radius: 50% 50% 30% 30%;
+    animation: flicker 0.4s infinite alternate;
+  }
+  @keyframes flicker {
+    0% { transform: translateX(-50%) scaleX(1) scaleY(1); opacity: 1; }
+    100% { transform: translateX(-50%) scaleX(0.85) scaleY(1.1); opacity: 0.9; }
+  }
+  .fire-glow {
+    position: absolute;
+    bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 30px;
+    background: radial-gradient(ellipse, rgba(255,100,0,0.4) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .scan-lines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(0,0,0,0.07) 3px,
+      rgba(0,0,0,0.07) 4px
+    );
+    pointer-events: none;
+    opacity: .95;
+    transition: opacity .2s var(--ease-out);
+  }
+
+  .cam-overlay {
+    position: absolute;
+    inset: 0;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .cam-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cam-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.9);
+    background: rgba(0,0,0,0.5);
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+  .cam-status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+  }
+  .cam-status-dot.ok { background: #4ade80; }
+  .cam-status-dot.alert { background: #E53935; animation: pulse 0.8s infinite; }
+
+  .cam-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cam-timestamp {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    color: rgba(255,255,255,0.6);
+  }
+  .cam-alert-badge {
+    font-size: 8px;
+    font-weight: 700;
+    background: var(--red);
+    color: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+    letter-spacing: 0.3px;
+  }
+
+  .crosshair {
+    position: absolute;
+    inset: 6px;
+  }
+  .crosshair::before, .crosshair::after {
+    content: '';
+    position: absolute;
+    border-color: rgba(255,255,255,0.3);
+    border-style: solid;
+    width: 10px; height: 10px;
+  }
+  .crosshair::before {
+    top: 0; left: 0;
+    border-width: 1.5px 0 0 1.5px;
+  }
+  .crosshair::after {
+    bottom: 0; right: 0;
+    border-width: 0 1.5px 1.5px 0;
+  }
+
+  .alert-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .alert-item {
+    background: var(--white);
+    border-radius: var(--r-md);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+
+  .alert-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .alert-icon.danger { background: var(--red-light); }
+  .alert-icon.safe { background: var(--green-light); }
+  .alert-icon.warn { background: #FFF8E1; }
+
+  .alert-info { flex: 1; }
+  .alert-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 2px;
+  }
+  .alert-meta {
+    font-size: 12px;
+    color: var(--grey);
+    display: flex;
+    gap: 8px;
+  }
+  .alert-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .alert-tag.resolved { background: var(--green-light); color: var(--green); }
+  .alert-tag.active { background: var(--red-light); color: var(--red); }
+  .alert-tag.warning { background: #FFF8E1; color: #F57F17; }
+
+  .emergency-btn {
+    background: linear-gradient(135deg, #C62828 0%, #E53935 100%);
+    border-radius: var(--r-xl);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: 0 8px 24px rgba(229,57,53,0.35);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .emergency-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    animation: shimmer 2.5s infinite;
+  }
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 200%; }
+  }
+  .emergency-btn-icon { font-size: 22px; }
+  .emergency-btn-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.2px;
+  }
+  .emergency-btn-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    font-weight: 400;
+  }
+
+  .bottom-nav {
+    margin-top: auto;
+    padding: 12px 24px 0;
+    display: flex;
+    justify-content: space-around;
+    border-top: 1px solid var(--border);
+    background: var(--white);
+    padding: 12px 20px;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    cursor: pointer;
+  }
+  .nav-item-icon { font-size: 20px; }
+  .nav-item-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--grey);
+    letter-spacing: 0.2px;
+  }
+  .nav-item.active .nav-item-label { color: var(--red); }
+  .nav-item.active .nav-item-icon { filter: none; }
+
+  .alert-detail-content {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .alert-hero {
+    border-radius: var(--r-xl);
+    background: linear-gradient(145deg, #B71C1C 0%, #E53935 50%, #FF5252 100%);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .alert-hero::before {
+    content: '🔥';
+    position: absolute;
+    font-size: 120px;
+    opacity: 0.07;
+    top: -10px;
+    right: -20px;
+  }
+
+  .alert-level-badge {
+    background: rgba(255,255,255,0.2);
+    border-radius: 30px;
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .alert-level-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #FF8A80;
+    animation: pulse 0.8s infinite;
+  }
+  .alert-level-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .alert-hero-icon { font-size: 52px; }
+  .alert-hero-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.3px;
+  }
+  .alert-hero-id {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.5px;
+  }
+
+  .info-card {
+    background: var(--white);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .info-row:last-child { border-bottom: none; }
+
+  .info-key {
+    font-size: 12px;
+    color: var(--grey);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .info-val {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dark);
+    text-align: right;
+  }
+  .info-val.red { color: var(--red); }
+  .info-val.green { color: var(--green); }
+
+  .snapshot-card {
+    background: var(--white);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .snapshot-header {
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .snapshot-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dark);
+  }
+  .snapshot-badge {
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--red-light);
+    color: var(--red);
+    padding: 3px 8px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .snapshot-img {
+    width: 100%;
+    height: 130px;
+    background: linear-gradient(180deg, #2a1200 0%, #3d1800 40%, #5c2800 100%);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .snapshot-scene {
+    position: absolute;
+    inset: 0;
+  }
+  .snap-floor {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40%;
+    background: rgba(0,0,0,0.4);
+  }
+  .snap-fire-1 {
+    position: absolute;
+    bottom: 38%;
+    left: 28%;
+    width: 50px; height: 70px;
+    background: radial-gradient(ellipse at 50% 100%, #ff2200 0%, #ff5500 30%, #ff8800 60%, transparent 85%);
+    border-radius: 50% 50% 30% 30%;
+    animation: flicker 0.35s infinite alternate;
+    filter: blur(1px);
+  }
+  .snap-fire-2 {
+    position: absolute;
+    bottom: 38%;
+    left: 48%;
+    width: 35px; height: 50px;
+    background: radial-gradient(ellipse at 50% 100%, #ff3300 0%, #ff6600 40%, transparent 85%);
+    border-radius: 50% 50% 30% 30%;
+    animation: flicker 0.45s 0.1s infinite alternate;
+    filter: blur(0.5px);
+  }
+  .snap-glow {
+    position: absolute;
+    bottom: 20%; left: 20%; right: 20%;
+    height: 40px;
+    background: radial-gradient(ellipse, rgba(255,80,0,0.5) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .snap-smoke {
+    position: absolute;
+    top: 10%; left: 30%;
+    width: 100px; height: 50px;
+    background: radial-gradient(ellipse, rgba(150,150,150,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: drift 3s infinite alternate;
+  }
+  @keyframes drift {
+    0% { transform: translateX(0) translateY(0); }
+    100% { transform: translateX(10px) translateY(-8px); }
+  }
+
+  .snapshot-overlay-text {
+    position: absolute;
+    top: 8px; left: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: rgba(255,255,255,0.7);
+    background: rgba(0,0,0,0.5);
+    padding: 3px 6px;
+    border-radius: 4px;
+  }
+  .detection-box {
+    position: absolute;
+    top: 25%; left: 22%;
+    width: 48%; height: 52%;
+    border: 1.5px solid var(--red);
+    border-radius: 4px;
+  }
+  .detection-box::before {
+    content: 'FIRE';
+    position: absolute;
+    top: -10px; left: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--red);
+    background: rgba(229,57,53,0.15);
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+  .corner { position: absolute; width: 8px; height: 8px; border-color: var(--red); border-style: solid; }
+  .corner-tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+  .corner-tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+  .corner-bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+  .corner-br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+  }
+  .action-btn {
+    flex: 1;
+    border-radius: var(--r-lg);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .action-btn.primary {
+    background: linear-gradient(135deg, #C62828, #E53935);
+    box-shadow: 0 6px 20px rgba(229,57,53,0.3);
+  }
+  .action-btn.secondary {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .action-btn-icon { font-size: 22px; }
+  .action-btn-text {
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: -0.1px;
+  }
+  .action-btn.primary .action-btn-text { color: white; }
+  .action-btn.secondary .action-btn-text { color: var(--dark); }
+  .action-btn-sub {
+    font-size: 10px;
+    text-align: center;
+  }
+  .action-btn.primary .action-btn-sub { color: rgba(255,255,255,0.7); }
+  .action-btn.secondary .action-btn-sub { color: var(--grey); }
+
+  .settings-content {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: var(--white);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+
+  .settings-group-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 0 0 8px 2px;
+  }
+
+  .settings-row {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .settings-row:last-child { border-bottom: none; }
+
+  .settings-row-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+
+  .settings-row-info { flex: 1; }
+  .settings-row-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 2px;
+  }
+  .settings-row-sub {
+    font-size: 11px;
+    color: var(--grey);
+  }
+
+  .toggle {
+    width: 44px; height: 24px;
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--green); }
+  .toggle.off { background: #D1D5DB; }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    transition: left 0.2s;
+  }
+  .toggle.on::after { left: calc(100% - 22px); }
+  .toggle.off::after { left: 2px; }
+
+  .slider-wrap {
+    padding: 0 16px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .slider-track {
+    flex: 1;
+    height: 6px;
+    background: var(--bg);
+    border-radius: 3px;
+    position: relative;
+    border: 1px solid var(--border);
+  }
+  .slider-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 65%;
+    background: linear-gradient(90deg, var(--green), #66BB6A);
+    border-radius: 3px;
+  }
+  .slider-thumb {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    left: calc(65% - 8px);
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--green);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--grey);
+    font-weight: 500;
+    padding: 0 2px;
+  }
+
+  .device-row {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .device-row:last-child { border-bottom: none; }
+
+  .device-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .device-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .device-dot.connected { background: var(--green); }
+  .device-dot.offline { background: #9CA3AF; }
+
+  .profile-card {
+    background: var(--white);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .profile-avatar {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: white;
+  }
+  .profile-info { flex: 1; }
+  .profile-name { font-size: 15px; font-weight: 700; color: var(--dark); }
+  .profile-role { font-size: 12px; color: var(--grey); }
+  .profile-arrow { font-size: 18px; color: var(--grey); }
+
+  .logout-btn {
+    background: var(--white);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 1.5px solid #FEE2E2;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+  }
+  .logout-btn-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--red);
+  }
+
+  .app-version {
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #C4C9D4;
+    margin-top: -8px;
+  }
+
+  .phone-indicator {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 12px;
+  }
+  .ind-dot {
+    width: 24px; height: 4px;
+    border-radius: 2px;
+    background: var(--grey);
+    opacity: 0.3;
+  }
+  .ind-dot.active {
+    background: var(--red);
+    opacity: 1;
+  }
+
+  .screen-desc {
+    font-size: 12px;
+    color: var(--grey);
+    text-align: center;
+    max-width: 320px;
+    line-height: 1.5;
+  }
+
+  /* Hover / focus interactions */
+  .nav-back,
+  .nav-avatar,
+  .section-link,
+  .cam-card,
+  .alert-item,
+  .emergency-btn,
+  .action-btn,
+  .settings-row,
+  .device-row,
+  .profile-card,
+  .logout-btn,
+  .nav-item,
+  .toggle,
+  .status-card {
+    transition: transform .22s var(--ease-out), box-shadow .22s var(--ease-out), border-color .22s var(--ease-out), background-color .22s var(--ease-out), color .22s var(--ease-out), opacity .22s var(--ease-out);
+  }
+
+  .nav-back:hover,
+  .nav-avatar:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: var(--shadow-md);
+  }
+
+  .section-link:hover {
+    color: #c62828;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .status-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .cam-card:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: var(--shadow-md);
+  }
+
+  .cam-card:hover .scan-lines {
+    opacity: .7;
+  }
+
+  .alert-item:hover {
+    border-color: #f9c6c5;
+    box-shadow: 0 8px 24px rgba(229,57,53,.14);
+    transform: translateY(-2px);
+  }
+
+  .emergency-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(229,57,53,0.45);
+  }
+
+  .action-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(229,57,53,0.4);
+  }
+
+  .action-btn.secondary:hover {
+    transform: translateY(-2px);
+    border-color: #f5b9b8;
+  }
+
+  .settings-row:hover,
+  .device-row:hover,
+  .profile-card:hover,
+  .logout-btn:hover {
+    background: #fffafa;
+  }
+
+  .toggle:hover {
+    box-shadow: 0 0 0 4px rgba(46,125,50,.15);
+  }
+
+  .nav-item:hover .nav-item-icon {
+    transform: translateY(-1px);
+  }
+
+  .nav-item:hover .nav-item-label {
+    color: var(--dark);
+  }
+
+  .emergency-btn:active,
+  .action-btn:active,
+  .logout-btn:active,
+  .nav-back:active,
+  .alert-item:active,
+  .cam-card:active {
+    transform: translateY(0) scale(.99);
+  }
+
+  .nav-back:focus-visible,
+  .nav-item:focus-visible,
+  .section-link:focus-visible,
+  .cam-card:focus-visible,
+  .alert-item:focus-visible,
+  .emergency-btn:focus-visible,
+  .action-btn:focus-visible,
+  .toggle:focus-visible,
+  .logout-btn:focus-visible {
+    outline: 3px solid rgba(229,57,53,.28);
+    outline-offset: 2px;
+    border-radius: 12px;
+  }
+
+  /* Responsive breakpoints */
+  @media (max-width: 1200px) {
+    .screens { gap: 24px; }
+    .page-header { margin-bottom: 32px; }
+  }
+
+  @media (max-width: 900px) {
+    body { padding: 24px 16px 36px; }
+    .screens {
+      flex-direction: column;
+      align-items: center;
+    }
+    .phone-wrap {
+      width: min(420px, 100%);
+    }
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 16px 10px 24px; }
+    .brand-name { font-size: 24px; }
+    .page-sub { font-size: 13px; }
+    .phone { border-radius: 36px; }
+    .notch { width: 108px; height: 30px; }
+    .phone-inner { min-height: auto; padding-top: 44px; }
+    .screen-content,
+    .alert-detail-content,
+    .settings-content { padding: 0 14px; }
+    .nav-header { padding: 0 16px 12px; }
+    .status-bar { padding: 4px 16px 10px; }
+    .action-buttons { flex-direction: column; }
+    .camera-grid { gap: 8px; }
+    .status-title { font-size: 26px; }
+  }
+
+  @media (max-width: 360px) {
+    .camera-grid { grid-template-columns: 1fr; }
+    .status-stats { gap: 10px; }
+    .stat-pill { padding: 8px 10px; }
+    .alert-meta { font-size: 11px; }
+  }
+
+  @media (hover: none) {
+    .nav-back:hover,
+    .nav-avatar:hover,
+    .section-link:hover,
+    .status-card:hover,
+    .cam-card:hover,
+    .alert-item:hover,
+    .emergency-btn:hover,
+    .action-btn:hover,
+    .settings-row:hover,
+    .device-row:hover,
+    .profile-card:hover,
+    .logout-btn:hover,
+    .toggle:hover,
+    .nav-item:hover .nav-item-icon,
+    .nav-item:hover .nav-item-label {
+      transform: none;
+      box-shadow: inherit;
+      color: inherit;
+      background: inherit;
+      text-decoration: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="brand">
+    <div class="brand-icon">🔥</div>
+    <span class="brand-name">FireGuard</span>
+  </div>
+  <p class="page-sub">Real-time Fire Detection & Emergency Monitoring</p>
+</div>
+
+<div class="screens">
+
+  <div class="phone-wrap">
+    <div class="screen-label">01 · Dashboard</div>
+    <div class="phone">
+      <div class="notch"><div class="notch-cam"></div><div class="notch-mic"></div></div>
+      <div class="phone-inner">
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="status-icons">
+            <span>●●●</span>
+            <span>WiFi</span>
+            <span>🔋</span>
+          </div>
+        </div>
+
+        <div class="nav-header">
+          <div class="nav-title">Overview</div>
+          <div class="nav-avatar">JD</div>
+        </div>
+
+        <div class="screen-content">
+          <div class="status-card safe">
+            <div class="status-top">
+              <div class="status-badge">
+                <div class="pulse-dot"></div>
+                All Systems Live
+              </div>
+              <div class="status-time">Updated 2s ago</div>
+            </div>
+            <div class="status-main">
+              <span class="status-icon-big">🛡️</span>
+              <div class="status-title">All Clear</div>
+              <div class="status-sub">No threats detected · 4 cameras online</div>
+            </div>
+            <div class="status-stats">
+              <div class="stat-pill"><div class="stat-val">4</div><div class="stat-lbl">Cameras</div></div>
+              <div class="stat-pill"><div class="stat-val">0</div><div class="stat-lbl">Alerts</div></div>
+              <div class="stat-pill"><div class="stat-val">99%</div><div class="stat-lbl">Uptime</div></div>
+            </div>
+          </div>
+
+          <div class="section-header"><div class="section-title">Live Cameras</div><div class="section-link">View All →</div></div>
+
+          <div class="camera-grid">
+            <div class="cam-card">
+              <div class="cam-scene cam-scene-1"><div class="cam-bg"></div><div class="cam-floor"></div></div>
+              <div class="scan-lines"></div>
+              <div class="cam-overlay"><div class="cam-top"><div class="cam-label">CAM-01</div><div class="cam-status-dot ok"></div></div><div class="cam-bottom"><div class="cam-timestamp">09:41:22</div></div></div>
+              <div class="crosshair"></div>
+            </div>
+
+            <div class="cam-card">
+              <div class="cam-scene cam-scene-2"><div class="cam-bg"></div><div class="cam-floor"></div><div class="fire-effect"><div class="fire-glow"></div><div class="fire-base"></div></div></div>
+              <div class="scan-lines"></div>
+              <div class="cam-overlay"><div class="cam-top"><div class="cam-label">CAM-02</div><div class="cam-status-dot alert"></div></div><div class="cam-bottom"><div class="cam-timestamp">09:41:22</div><div class="cam-alert-badge">FIRE</div></div></div>
+              <div class="crosshair"></div>
+            </div>
+
+            <div class="cam-card">
+              <div class="cam-scene cam-scene-3"><div class="cam-bg"></div><div class="cam-floor"></div></div>
+              <div class="scan-lines"></div>
+              <div class="cam-overlay"><div class="cam-top"><div class="cam-label">CAM-03</div><div class="cam-status-dot ok"></div></div><div class="cam-bottom"><div class="cam-timestamp">09:41:22</div></div></div>
+              <div class="crosshair"></div>
+            </div>
+
+            <div class="cam-card">
+              <div class="cam-scene cam-scene-4"><div class="cam-bg"></div><div class="cam-floor"></div></div>
+              <div class="scan-lines"></div>
+              <div class="cam-overlay"><div class="cam-top"><div class="cam-label">CAM-04</div><div class="cam-status-dot ok"></div></div><div class="cam-bottom"><div class="cam-timestamp">09:41:22</div></div></div>
+              <div class="crosshair"></div>
+            </div>
+          </div>
+
+          <div class="section-header"><div class="section-title">Recent Alerts</div><div class="section-link">History →</div></div>
+
+          <div class="alert-list">
+            <div class="alert-item"><div class="alert-icon danger">🔥</div><div class="alert-info"><div class="alert-name">Fire Detected · Zone B</div><div class="alert-meta"><span>CAM-02</span>·<span>Today, 09:41</span></div></div><div class="alert-tag active">Active</div></div>
+            <div class="alert-item"><div class="alert-icon warn">⚠️</div><div class="alert-info"><div class="alert-name">Smoke Detected · Zone D</div><div class="alert-meta"><span>CAM-04</span>·<span>Today, 08:15</span></div></div><div class="alert-tag warning">Warning</div></div>
+            <div class="alert-item"><div class="alert-icon safe">✅</div><div class="alert-info"><div class="alert-name">False Alarm · Zone A</div><div class="alert-meta"><span>CAM-01</span>·<span>Yesterday</span></div></div><div class="alert-tag resolved">Resolved</div></div>
+          </div>
+
+          <div class="emergency-btn"><div class="emergency-btn-icon">📞</div><div><div class="emergency-btn-text">Call Emergency Services</div><div class="emergency-btn-sub">Tap to dial 911 immediately</div></div></div>
+        </div>
+
+        <div class="bottom-nav">
+          <div class="nav-item active"><div class="nav-item-icon">🏠</div><div class="nav-item-label" style="color:#E53935">Home</div></div>
+          <div class="nav-item"><div class="nav-item-icon">📷</div><div class="nav-item-label">Cameras</div></div>
+          <div class="nav-item"><div class="nav-item-icon">🔔</div><div class="nav-item-label">Alerts</div></div>
+          <div class="nav-item"><div class="nav-item-icon">⚙️</div><div class="nav-item-label">Settings</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-indicator"><div class="ind-dot active"></div><div class="ind-dot"></div><div class="ind-dot"></div></div>
+    <div class="screen-desc">Live status monitoring with camera feeds, alert history & emergency action</div>
+  </div>
+
+  <div class="phone-wrap">
+    <div class="screen-label">02 · Alert Detail</div>
+    <div class="phone">
+      <div class="notch"><div class="notch-cam"></div><div class="notch-mic"></div></div>
+      <div class="phone-inner">
+        <div class="status-bar"><span>9:41</span><div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+        <div class="nav-header"><div class="nav-back">←</div><div class="nav-title">Alert Detail</div><div style="width:36px"></div></div>
+
+        <div class="alert-detail-content">
+          <div class="alert-hero"><div class="alert-level-badge"><div class="alert-level-dot"></div><div class="alert-level-text">Critical · Level 3</div></div><div class="alert-hero-icon">🔥</div><div class="alert-hero-title">Fire Detected</div><div class="alert-hero-id">#ALT-20240125-0094</div></div>
+
+          <div class="info-card">
+            <div class="info-row"><div class="info-key">📅 Timestamp</div><div class="info-val">Today, 09:41:08 AM</div></div>
+            <div class="info-row"><div class="info-key">📍 Location</div><div class="info-val">Zone B · Building 2</div></div>
+            <div class="info-row"><div class="info-key">📷 Camera</div><div class="info-val">CAM-02 · Floor 1</div></div>
+            <div class="info-row"><div class="info-key">🌡️ Temperature</div><div class="info-val red">+340°C Anomaly</div></div>
+            <div class="info-row"><div class="info-key">🎯 Confidence</div><div class="info-val red">97.4%</div></div>
+            <div class="info-row"><div class="info-key">🚨 Status</div><div class="info-val red">Unresolved</div></div>
+          </div>
+
+          <div class="snapshot-card">
+            <div class="snapshot-header"><div class="snapshot-title">Camera Snapshot</div><div class="snapshot-badge"><span style="width:5px;height:5px;background:var(--red);border-radius:50%;display:inline-block;animation:pulse 0.8s infinite"></span>Live Feed</div></div>
+            <div class="snapshot-img">
+              <div class="snapshot-scene"><div class="cam-bg" style="background:linear-gradient(180deg, #2a0f00 0%, #3d1800 50%, #1a0a00 100%)"></div><div class="snap-floor"></div><div class="snap-glow"></div><div class="snap-fire-1"></div><div class="snap-fire-2"></div><div class="snap-smoke"></div></div>
+              <div class="scan-lines"></div>
+              <div class="snapshot-overlay-text">09:41:08 · CAM-02</div>
+              <div class="detection-box"><div class="corner corner-tl"></div><div class="corner corner-tr"></div><div class="corner corner-bl"></div><div class="corner corner-br"></div></div>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <div class="action-btn primary"><div class="action-btn-icon">📞</div><div class="action-btn-text">Call Emergency</div><div class="action-btn-sub">Dial 911 now</div></div>
+            <div class="action-btn secondary"><div class="action-btn-icon">👤</div><div class="action-btn-text">Notify Admin</div><div class="action-btn-sub">Send alert</div></div>
+          </div>
+
+          <div style="text-align:center; padding: 4px 0;"><span style="font-size:13px; font-weight:600; color:var(--grey);">Mark as False Alarm</span></div>
+        </div>
+
+        <div class="bottom-nav" style="margin-top:auto">
+          <div class="nav-item"><div class="nav-item-icon">🏠</div><div class="nav-item-label">Home</div></div>
+          <div class="nav-item"><div class="nav-item-icon">📷</div><div class="nav-item-label">Cameras</div></div>
+          <div class="nav-item active"><div class="nav-item-icon">🔔</div><div class="nav-item-label" style="color:#E53935">Alerts</div></div>
+          <div class="nav-item"><div class="nav-item-icon">⚙️</div><div class="nav-item-label">Settings</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-indicator"><div class="ind-dot"></div><div class="ind-dot active"></div><div class="ind-dot"></div></div>
+    <div class="screen-desc">Detailed alert view with detection snapshot, metadata & rapid response actions</div>
+  </div>
+
+  <div class="phone-wrap">
+    <div class="screen-label">03 · Settings</div>
+    <div class="phone">
+      <div class="notch"><div class="notch-cam"></div><div class="notch-mic"></div></div>
+      <div class="phone-inner">
+        <div class="status-bar"><span>9:41</span><div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div></div>
+        <div class="nav-header"><div class="nav-title">Settings</div><div style="width:36px"></div></div>
+
+        <div class="settings-content">
+          <div class="profile-card"><div class="profile-avatar">JD</div><div class="profile-info"><div class="profile-name">James Donovan</div><div class="profile-role">Security Admin · Acme Corp</div></div><div class="profile-arrow">›</div></div>
+
+          <div>
+            <div class="settings-group-label">Notifications</div>
+            <div class="settings-group">
+              <div class="settings-row"><div class="settings-row-icon" style="background:#FEF3C7">🔔</div><div class="settings-row-info"><div class="settings-row-title">Fire Alerts</div><div class="settings-row-sub">Push & sound notifications</div></div><div class="toggle on"></div></div>
+              <div class="settings-row"><div class="settings-row-icon" style="background:#EDE9FE">📱</div><div class="settings-row-info"><div class="settings-row-title">SMS Alerts</div><div class="settings-row-sub">Text to +1 (555) 000-0012</div></div><div class="toggle on"></div></div>
+              <div class="settings-row"><div class="settings-row-icon" style="background:#FEE2E2">📧</div><div class="settings-row-info"><div class="settings-row-title">Email Reports</div><div class="settings-row-sub">Daily digest only</div></div><div class="toggle off"></div></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="settings-group-label">Detection</div>
+            <div class="settings-group">
+              <div>
+                <div class="settings-row" style="border-bottom:none; padding-bottom:4px"><div class="settings-row-icon" style="background:#ECFDF5">🎯</div><div class="settings-row-info"><div class="settings-row-title">Sensitivity Level</div><div class="settings-row-sub">Current: <strong style="color:var(--dark)">Medium-High</strong></div></div><div style="font-size:13px; font-weight:700; color:var(--green)">65%</div></div>
+                <div class="slider-wrap"><div class="slider-track"><div class="slider-fill"></div><div class="slider-thumb"></div></div><div class="slider-labels" style="margin-top:6px"><span>Low</span><span>Medium</span><span>High</span></div></div>
+              </div>
+              <div class="settings-row"><div class="settings-row-icon" style="background:#EFF6FF">🌙</div><div class="settings-row-info"><div class="settings-row-title">Night Mode Detection</div><div class="settings-row-sub">Enhanced IR analysis</div></div><div class="toggle on"></div></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="settings-group-label">Devices</div>
+            <div class="settings-group">
+              <div class="device-row"><div class="settings-row-icon" style="background:#F0FDF4">📷</div><div class="settings-row-info"><div class="settings-row-title">CAM-01 · Lobby</div><div class="settings-row-sub">192.168.1.101</div></div><div class="device-status"><div class="device-dot connected"></div><span style="font-size:11px; font-weight:600; color:var(--green)">Online</span></div></div>
+              <div class="device-row"><div class="settings-row-icon" style="background:#FFF1F2">📷</div><div class="settings-row-info"><div class="settings-row-title">CAM-02 · Zone B</div><div class="settings-row-sub">192.168.1.102</div></div><div class="device-status"><div class="device-dot connected"></div><span style="font-size:11px; font-weight:600; color:var(--green)">Online</span></div></div>
+              <div class="device-row"><div class="settings-row-icon" style="background:#F9FAFB">📷</div><div class="settings-row-info"><div class="settings-row-title">CAM-05 · Basement</div><div class="settings-row-sub">192.168.1.105</div></div><div class="device-status"><div class="device-dot offline"></div><span style="font-size:11px; font-weight:600; color:#9CA3AF">Offline</span></div></div>
+            </div>
+          </div>
+
+          <div class="logout-btn"><span style="font-size:18px">🚪</span><div class="logout-btn-text">Log Out</div></div>
+          <div class="app-version">FireGuard v2.4.1 · Build 20240125</div>
+        </div>
+
+        <div class="bottom-nav" style="margin-top:auto">
+          <div class="nav-item"><div class="nav-item-icon">🏠</div><div class="nav-item-label">Home</div></div>
+          <div class="nav-item"><div class="nav-item-icon">📷</div><div class="nav-item-label">Cameras</div></div>
+          <div class="nav-item"><div class="nav-item-icon">🔔</div><div class="nav-item-label">Alerts</div></div>
+          <div class="nav-item active"><div class="nav-item-icon">⚙️</div><div class="nav-item-label" style="color:#E53935">Settings</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-indicator"><div class="ind-dot"></div><div class="ind-dot"></div><div class="ind-dot active"></div></div>
+    <div class="screen-desc">Notification toggles, detection sensitivity, device status & account management</div>
+  </div>
+
+</div>
+
+</body>
+</html>
